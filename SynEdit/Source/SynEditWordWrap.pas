@@ -65,7 +65,7 @@ var
 type
   TLineIndex = 0..MaxListSize;
   TRowIndex = 0..MaxListSize;
-  TRowLength = byte;
+  TRowLength = word;
 
   TRowIndexArray = array [TLineIndex] of TRowIndex;
   PRowIndexArray = ^TRowIndexArray;
@@ -426,7 +426,7 @@ begin
   vLine := Editor.ExpandAtWideGlyphs(vLine);
   // Pre-allocate a buffer for rowlengths
   vMaxNewRows := ((Length(vLine) - 1) div fMinRowLength) + 1;
-  vTempRowLengths := AllocMem(vMaxNewRows);
+  vTempRowLengths := AllocMem(vMaxNewRows * SizeOf(TRowLength));
   try
     vLineRowCount := 0;
     vRowBegin := PWideChar(vLine);
