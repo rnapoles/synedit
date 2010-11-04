@@ -1144,6 +1144,15 @@ const
   FrameWidth = 2; { the border width when BoderStyle = bsSingle (until we support TWidgetStyle...)  }
 {$ENDIF}
 
+function CeilOfIntDiv(Dividend: Cardinal; Divisor: Word): Word;
+Var
+  Remainder: Word;
+begin
+  DivMod(Dividend,  Divisor, Result, Remainder);
+  if Remainder > 0 then
+    Inc(Result);
+end;
+
 function TrimTrailingSpaces(const S: UnicodeString): UnicodeString;
 var
   I: Integer;
@@ -2827,7 +2836,7 @@ begin
   for i := 1 to Length(S) do
   begin
     inc(j);
-    CountOfAvgGlyphs := Ceil(fTextDrawer.TextWidth(S[i]) / fCharWidth);
+    CountOfAvgGlyphs := CeilOfIntDiv(fTextDrawer.TextWidth(S[i]), fCharWidth);
 
     if j + CountOfAvgGlyphs > Length(Result) then
       SetLength(Result, Length(Result) + 128);
@@ -3063,7 +3072,7 @@ var
           inc(NonFillerPos);
         end;
 
-        CountOfAvgGlyphs := Ceil(fTextDrawer.TextWidth(Token[NonFillerPos]) / fCharWidth);
+        CountOfAvgGlyphs := CeilOfIntDiv(fTextDrawer.TextWidth(Token[NonFillerPos]) , fCharWidth);
 
         // first visible part of the glyph (1-based)
         // (the glyph is visually sectioned in parts of size fCharWidth)
@@ -10198,7 +10207,7 @@ begin
         inc(x, TabWidth - (x mod TabWidth))
       else if i <= l then
       begin
-        CountOfAvgGlyphs := Ceil(fTextDrawer.TextWidth(s[i]) / fCharWidth);
+        CountOfAvgGlyphs := CeilOfIntDiv(fTextDrawer.TextWidth(s[i]) , fCharWidth);
         inc(x, CountOfAvgGlyphs);
       end
       else
@@ -10238,7 +10247,7 @@ begin
         inc(x, TabWidth - (x mod TabWidth))
       else if i <= l then
       begin
-        CountOfAvgGlyphs := Ceil(fTextDrawer.TextWidth(s[i]) / fCharWidth);
+        CountOfAvgGlyphs := CeilOfIntDiv(fTextDrawer.TextWidth(s[i]) , fCharWidth);
         inc(x, CountOfAvgGlyphs);
       end
       else
