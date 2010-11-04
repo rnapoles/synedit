@@ -4936,7 +4936,14 @@ var
   iWheelClicks: Integer;
   iLinesToScroll: Integer;
 begin
-  if GetKeyState(VK_CONTROL) < 0 then
+  Result := inherited DoMouseWheel(Shift, WheelDelta, MousePos);
+  if Result then
+    Exit;  
+{$IFDEF SYN_CLX}
+  if ssCtrl in Application.KeyState then
+{$ELSE}
+  if GetKeyState(SYNEDIT_CONTROL) < 0 then
+{$ENDIF}
     iLinesToScroll := LinesInWindow shr Ord(eoHalfPageScroll in fOptions)
   else
     iLinesToScroll := 3;
@@ -7206,11 +7213,20 @@ begin
                     end;
                     SpaceCount2 := 0;
                   end;
-                  ProperSetLine(CaretY - 1, Temp);
                   fCaretX := fCaretX - (SpaceCount1 - SpaceCount2);
                   UpdateLastCaretX;
+                  // Stores the previous "expanded" CaretX if the line contains tabs.
+                  if (eoTrimTrailingSpaces in Options) and (Len <> Length(TabBuffer)) then
+                    vTabTrim := CharIndex2CaretPos(CaretX, TabWidth, Temp);
+                  ProperSetLine(CaretY - 1, Temp);
                   fStateFlags := fStateFlags + [sfCaretChanged];
                   StatusChanged([scCaretX]);
+                  // Calculates a delta to CaretX to compensate for trimmed tabs.
+                  if vTabTrim <> 0 then
+                    if Length(Temp) <> Length(LineText) then
+                      Dec(vTabTrim, CharIndex2CaretPos(CaretX, TabWidth, LineText))
+                    else
+                      vTabTrim := 0;
                 end
                 else begin
                   // delete char
@@ -7435,22 +7451,21 @@ begin
               end;
               Lines.Insert(CaretY, '');
               Caret := CaretXY;
+
+              fUndoList.AddChange(crLineBreak, Caret, Caret, '', smNormal);   //KV
               if Command = ecLineBreak then
               begin
+                InternalCaretXY := BufferCoord(1, CaretY +1);
                 if SpaceCount2 > 0 then
                 begin
                   SpaceBuffer := Copy(Lines[BackCounter], 1, SpaceCount2);
-                  InternalCaretXY := BufferCoord(1, CaretY +1);
                   for i := 1 to Length(SpaceBuffer) do
                     if SpaceBuffer[i] = #9 then
                       CommandProcessor(ecTab, #0, nil)
                     else
                       CommandProcessor(ecChar, SpaceBuffer[i], nil);
-                end
-                else
-                 InternalCaretXY := BufferCoord(1, CaretY +1);
+                end;
               end;
-              fUndoList.AddChange(crLineBreak, Caret, Caret, '', smNormal);
             end;
           end
           else begin
@@ -8480,7 +8495,8 @@ procedure TCustomSynEdit.SetFocus;
 begin
   if (fFocusList.Count > 0) then
   begin
-    TWinControl (fFocusList.Last).SetFocus;
+    if TWinControl (fFocusList.Last).CanFocus then  
+      TWinControl (fFocusList.Last).SetFocus;
     exit;
   end;
   inherited;
@@ -9130,6 +9146,7 @@ var
   PrevLine, OldSelText: UnicodeString;
   p: PWideChar;
   OldCaretXY: TBufferCoord;
+  ChangeScroll: Boolean;
 begin
   // Provide Visual Studio like block indenting
   if (eoTabIndent in Options) and ((SelTabBlock) or (SelTabLine)) then
@@ -9203,7 +9220,15 @@ begin
     fUndoList.AddChange(crSilentDelete, BufferCoord(NewX, CaretY),
       OldCaretXY, OldSelText, smNormal);
 
-    InternalCaretX := NewX;
+    // KV
+    ChangeScroll := not(eoScrollPastEol in fOptions);
+    try
+      Include(fOptions, eoScrollPastEol);
+      InternalCaretX := NewX;
+    finally
+      if ChangeScroll then
+        Exclude(fOptions, eoScrollPastEol);
+    end;
   end;
 end;
 
@@ -9663,8 +9688,8 @@ begin
   begin
     Result := Focused;
     DoSearchFindNextExecute(TSearchFindNext(Action))
-{$ENDIF}
   end
+{$ENDIF}
   else
     Result := inherited ExecuteAction(Action);
 end;
@@ -9695,16 +9720,16 @@ begin
 {$ENDIF}
     end;
 {$IFDEF SYN_COMPILER_6_UP}
-  end else if Action is TSearchAction then                                      
-  begin                                                                         
+  end else if Action is TSearchAction then
+  begin
     Result := Focused;
     if Result then
-    begin                                                                       
-      if Action is TSearchFindFirst then                                        
-        TSearchAction(Action).Enabled := (Text<>'') and assigned(fSearchEngine) 
-      else if Action is TSearchFind then                                        
-        TSearchAction(Action).Enabled := (Text<>'') and assigned(fSearchEngine) 
-      else if Action is TSearchReplace then                                     
+    begin
+      if Action is TSearchFindFirst then
+        TSearchAction(Action).Enabled := (Text<>'') and assigned(fSearchEngine)
+      else if Action is TSearchFind then
+        TSearchAction(Action).Enabled := (Text<>'') and assigned(fSearchEngine)
+      else if Action is TSearchReplace then
         TSearchAction(Action).Enabled := (Text<>'') and assigned(fSearchEngine);
     end;                                                                        
   end else if Action is TSearchFindNext then                                    
