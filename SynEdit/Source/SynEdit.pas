@@ -4513,6 +4513,13 @@ var
           fCaretX := 1 + Length(Str);
         end
         else begin
+          //--------- KV from SynEditStudio
+          if (CaretY = Lines.Count) or InsertMode then
+          begin
+            Lines.Insert(CaretY -1, '');
+            Inc(Result);
+          end;
+          //---------
           ProperSetLine(CaretY - 1, Str);
           Inc(fCaretY);
           Include(fStatusChanges, scCaretY);
