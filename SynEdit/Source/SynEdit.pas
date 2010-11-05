@@ -783,7 +783,8 @@ type
     procedure EndUndoBlock;
     procedure EndUpdate;
     procedure EnsureCursorPosVisible;
-    procedure EnsureCursorPosVisibleEx(ForceToMiddle: Boolean);
+    procedure EnsureCursorPosVisibleEx(ForceToMiddle: Boolean;
+      EvenIfVisible: Boolean = False);
     procedure FindMatchingBracket; virtual;
     function GetMatchingBracket: TBufferCoord; virtual;
     function GetMatchingBracketEx(const APoint: TBufferCoord): TBufferCoord; virtual;
@@ -6803,7 +6804,8 @@ begin
   EnsureCursorPosVisibleEx(False);
 end;
 
-procedure TCustomSynEdit.EnsureCursorPosVisibleEx(ForceToMiddle: Boolean);
+procedure TCustomSynEdit.EnsureCursorPosVisibleEx(ForceToMiddle: Boolean;
+  EvenIfVisible: Boolean = False);
 var
   TmpMiddle: Integer;
   VisibleX: Integer;
@@ -6837,6 +6839,12 @@ begin
       begin
         TmpMiddle := LinesInWindow div 2;
         TopLine := vCaretRow - (LinesInWindow - 1) + TmpMiddle;
+      end
+     { Forces to middle even if visible in viewport }
+      else if EvenIfVisible then
+      begin
+        TmpMiddle := fLinesInWindow div 2;
+        TopLine := vCaretRow - TmpMiddle + 1;
       end;
     end
     else begin
