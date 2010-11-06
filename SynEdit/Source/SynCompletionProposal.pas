@@ -2459,8 +2459,6 @@ begin
   case Kind of
   ctCode:
     begin
-      CurrentString := s;
-
       Form.FScrollbar.Visible := True;
 
       RecalcFormPlacement;
@@ -2473,7 +2471,9 @@ begin
         Form.FScrollbar.Position := Form.Position;
       end;
       if Form.AssignedList.Count > 0 then
-        Form.Show
+        Form.Show;
+      
+      CurrentString := s;  // bug id 1496148
     end;
   ctParams, ctHint:
     begin
