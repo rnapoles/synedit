@@ -37,24 +37,16 @@ Known Issues:
 //todo: Document the code
 //todo: The length of the last Row of a Line could be calculated from the Line length instead of being stored. This would be only useful when most of the lines aren't wrapped.
 
-{$IFNDEF QSYNEDITWORDWRAP}
 unit SynEditWordWrap;
-{$ENDIF}
 
 {$I SynEdit.inc}
 
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditTypes,
-  QSynEditTextBuffer,
-  QSynEdit,
-{$ELSE}
   SynEditTypes,
   SynEditTextBuffer,
   SynEdit,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -126,19 +118,11 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynUnicode,
-{$ELSE}
   SynUnicode,
-{$ENDIF}
 {$IFDEF SYN_COMPILER_6_UP}
   RTLConsts,
 {$ELSE}
-  {$IFDEF SYN_CLX}
-    QConsts,
-  {$ELSE}
-    Consts,
-  {$ENDIF}
+  Consts,
 {$ENDIF}
 {$IFNDEF SYN_COMPILER_4_UP}
   SynEditMiscProcs,
