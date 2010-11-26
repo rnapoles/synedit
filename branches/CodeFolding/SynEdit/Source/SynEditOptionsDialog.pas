@@ -64,7 +64,7 @@ uses
   SynEditMiscClasses,
   SynEditKeyCmds,
   Classes,
-  SysUtils, ImgList;
+  SysUtils;
 
 type
 {$IFNDEF SYN_DELPHI_4_UP}
