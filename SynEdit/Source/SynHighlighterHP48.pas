@@ -44,25 +44,17 @@ Known Issues:
 The unit SynHighlighterHP48 provides SynEdit with a HP48 assembler highlighter.
 }
 
-{$IFNDEF QSYNHIGHLIGHTERHP48}
 unit SynHighlighterHP48;
-{$ENDIF}
 
 {$I SynEdit.inc}
 
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QGraphics,
-  QSynEditHighlighter,
-  QSynUnicode,  
-{$ELSE}
   Windows,
   Graphics,
   SynEditHighlighter,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -185,10 +177,8 @@ type
     function GetRange: Pointer; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
-    {$IFNDEF SYN_CLX}
     function SaveToRegistry(RootKey: HKEY; Key: string): boolean; override;
     function LoadFromRegistry(RootKey: HKEY; Key: string): boolean; override;
-    {$ENDIF}
     procedure Assign(Source: TPersistent); override;
     property AsmKeyWords: TSpeedStringList read FAsmKeyWords;
     property SAsmFoField: TSpeedStringList read FSAsmNoField;
@@ -221,11 +211,7 @@ uses
 {$IFDEF UNICODE}
   WideStrUtils,
 {$ENDIF}
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
 
 const
   DefaultAsmKeyWords: UnicodeString = '!RPL'#13#10'ENDCODE'#13#10'{'#13#10'}'#13#10 +
@@ -820,7 +806,6 @@ begin
     Inc(Run);
 end;
 
-{$IFNDEF SYN_CLX}
 function TSynHP48Syn.LoadFromRegistry(RootKey: HKEY; Key: string): boolean;
 var
   r: TBetterRegistry;
@@ -859,7 +844,6 @@ begin
   finally r.Free;
   end;
 end;
-{$ENDIF}
 
 procedure TSynHP48Syn.Assign(Source: TPersistent);
 var
