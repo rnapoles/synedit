@@ -9667,11 +9667,13 @@ begin
     if Result then
     begin
       if Action is TEditCut then
-        CutToClipboard
+        CommandProcessor(ecCut, ' ', nil) //[BS] Patch: make Cut set Datalink in Edit mode
+//        CutToClipboard
       else if Action is TEditCopy then
         CopyToClipboard
-      else if Action is TEditPaste then
-        PasteFromClipboard
+      else if Action is TEditPaste then   //[BS] Patch: make Paste set Datalink in Edit mode
+        CommandProcessor(ecPaste, ' ', nil)
+//        PasteFromClipboard
 {$IFDEF SYN_COMPILER_5_UP}
       else if Action is TEditDelete then
       begin
