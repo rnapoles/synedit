@@ -10,9 +10,9 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Version>7.0</Version>
     <DCC_WriteableConstants>True</DCC_WriteableConstants>
-    <DCC_AssertionsAtRuntime>False</DCC_AssertionsAtRuntime>
     <DCC_MapFile>3</DCC_MapFile>
     <DCC_RemoteDebug>True</DCC_RemoteDebug>
+    <DCC_AssertionsAtRuntime>False</DCC_AssertionsAtRuntime>
     <DCC_DebugInformation>False</DCC_DebugInformation>
     <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
     <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
@@ -35,8 +35,8 @@
     <DelphiCompile Include="SynEdit_D2007.dpk">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
-    <DCCReference Include="..\..\..\LCCAM31\designide.dcp" />
-    <DCCReference Include="..\..\..\LCCAM31\SynEdit_R2007.dcp" />
+    <DCCReference Include="..\..\..\..\..\designide.dcp" />
+    <DCCReference Include="..\..\..\..\..\SynEdit_R2007.dcp" />
     <DCCReference Include="..\Source\SynEditPropertyReg.pas" />
     <DCCReference Include="..\Source\SynEditReg.dcr" />
     <DCCReference Include="..\Source\SynEditReg.dcr" />

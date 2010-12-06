@@ -5,15 +5,17 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-    <DCC_DependencyCheckOutputName>C:\Program Files (x86)\Common Files\Sng\Bpl\SynEdit_R2007.bpl</DCC_DependencyCheckOutputName>
+    <DCC_DependencyCheckOutputName>C:\Program Files (x86)\Common Files\sng\bpl\SynEdit_R2007.bpl</DCC_DependencyCheckOutputName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Version>7.0</Version>
     <DCC_WriteableConstants>True</DCC_WriteableConstants>
     <DCC_MapFile>3</DCC_MapFile>
     <DCC_RemoteDebug>True</DCC_RemoteDebug>
-    <DCC_Optimize>False</DCC_Optimize>
-    <DCC_GenerateStackFrames>True</DCC_GenerateStackFrames>
+    <DCC_AssertionsAtRuntime>False</DCC_AssertionsAtRuntime>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <Version>7.0</Version>
@@ -33,10 +35,10 @@
     <DelphiCompile Include="SynEdit_R2007.dpk">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
-    <DCCReference Include="..\..\..\LCCAM31\ANT\Plugins\rtl.dcp" />
-    <DCCReference Include="..\..\..\LCCAM31\ANT\Plugins\vcl.dcp" />
-    <DCCReference Include="..\..\..\LCCAM31\ANT\Plugins\vcldb.dcp" />
-    <DCCReference Include="..\..\..\LCCAM31\ANT\Plugins\vclx.dcp" />
+    <DCCReference Include="..\..\..\..\..\rtl.dcp" />
+    <DCCReference Include="..\..\..\..\..\vcl.dcp" />
+    <DCCReference Include="..\..\..\..\..\vcldb.dcp" />
+    <DCCReference Include="..\..\..\..\..\vclx.dcp" />
     <DCCReference Include="..\Source\SynAutoCorrect.pas" />
     <DCCReference Include="..\Source\SynAutoCorrectEditor.pas">
       <Form>frmAutoCorrectEditor</Form>
