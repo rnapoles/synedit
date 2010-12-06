@@ -53,12 +53,6 @@ unit SynHighlighterSQL;
 
 {$I SynEdit.inc}
 
-{ Enable extensions added by SNG
-  - Added public property FunctionNames setting keywords that will be highlighted
-    according to the FunctionAttributes
-}
-{$DEFINE SNG-EXTENSIONS}
-
 interface
 
 uses
@@ -89,7 +83,7 @@ type
   TRangeState = (rsUnknown, rsComment, rsString, rsConditionalComment);
 
   TSQLDialect = (sqlStandard, sqlInterbase6, sqlMSSQL7, sqlMySQL, sqlOracle,
-    sqlSybase, sqlIngres, sqlMSSQL2K, sqlPostgres {$IFDEF SNG-EXTENSIONS}, sqlNexus {$ENDIF});
+    sqlSybase, sqlIngres, sqlMSSQL2K, sqlPostgres, sqlNexus);
 
 type
   TSynSQLSyn = class(TSynCustomHighlighter)
@@ -98,9 +92,7 @@ type
     fTokenID: TtkTokenKind;
     fKeywords: TSynHashEntryList;
     fTableNames: TUnicodeStrings;
-{$IFDEF SNG-EXTENSIONS}
     fFunctionNames: TUniCodeStrings;
-{$ENDIF}
     fDialect: TSQLDialect;
     fCommentAttri: TSynHighlighterAttributes;
     fConditionalCommentAttri: TSynHighlighterAttributes;
@@ -124,10 +116,8 @@ type
     procedure DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
     procedure SetDialect(Value: TSQLDialect);
     procedure SetTableNames(const Value: TUnicodeStrings);
-{$IFDEF SNG-EXTENSIONS}
     procedure SetFunctionNames(const Value: TUnicodeStrings);
     procedure PutFunctionNamesInKeywordList;
-{$ENDIF}
     procedure TableNamesChanged(Sender: TObject);
     procedure InitializeKeywordLists;
     procedure PutTableNamesInKeywordList;
@@ -211,9 +201,7 @@ type
     property TableNameAttri: TSynHighlighterAttributes read fTableNameAttri
       write fTableNameAttri;
     property TableNames: TUnicodeStrings read fTableNames write SetTableNames;
-{$IFDEF SNG-EXTENSIONS}
     property FunctionNames: TUnicodeStrings read fFunctionNames write SetFunctionNames;
-{$ENDIF}
     property VariableAttri: TSynHighlighterAttributes read fVariableAttri
       write fVariableAttri;
     property SQLDialect: TSQLDialect read fDialect write SetDialect
@@ -1244,10 +1232,8 @@ begin
   fTableNames := TUnicodeStringList.Create;
   TUnicodeStringList(fTableNames).OnChange := TableNamesChanged;
 
-{$IFDEF SNG-EXTENSIONS}
   fFunctionNames := TunicodeStringList.Create;
   TUnicodeStringList(fFunctionNames).OnChange := TableNamesChanged;
-{$ENDIF}
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
@@ -1305,9 +1291,7 @@ destructor TSynSQLSyn.Destroy;
 begin
   fKeywords.Free;
   fTableNames.Free;
-{$IFDEF SNG-EXTENSIONS}
   fFunctionNames.Free;
-{$ENDIF}
   inherited Destroy;
 end;
 
@@ -1878,7 +1862,6 @@ begin
   end;
 end;
 
-{$IFDEF SNG-EXTENSIONS}
 procedure TSynSQLSyn.PutFunctionNamesInKeywordList;
 var
   i: Integer;
@@ -1897,7 +1880,6 @@ begin
       DoAddKeyword(fFunctionNames[i], Ord(tkFunction));
   end;
 end;
-{$ENDIF}
 
 procedure TSynSQLSyn.InitializeKeywordLists;
 var
@@ -1909,9 +1891,7 @@ begin
     EnumerateKeywords(I, GetKeywords(I), IsIdentChar, DoAddKeyword);
 
   PutTableNamesInKeywordList;
-{$IFDEF SNG-EXTENSIONS}
   PutFunctionNamesInKeywordList;
-{$ENDIF}
   DefHighlightChange(Self);
 end;
 
@@ -1924,12 +1904,10 @@ begin
   end;
 end;
 
-{$IFDEF SNG-EXTENSIONS}
 procedure TSynSQLSyn.SetFunctionNames(const Value: TUnicodeStrings);
 begin
   fFunctionNames := Value;
 end;
-{$ENDIF}
 
 function TSynSQLSyn.GetSampleSource: UnicodeString;
 begin
