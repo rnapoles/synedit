@@ -3987,11 +3987,12 @@ var
 
   procedure DeleteSelection;
   var
-    x, MarkOffset: Integer;
+    x, MarkOffset, MarkOffset2: Integer;
     UpdateMarks: Boolean;
   begin
     UpdateMarks := False;
     MarkOffset := 0;
+    MarkOffset2 := 0;
     case fActiveSelectionMode of
       smNormal:
         begin
@@ -4000,6 +4001,8 @@ var
               // Create a string that contains everything on the first line up
               // to the selection mark, and everything on the last line after
               // the selection mark.
+            if BB.Char > 1 then
+              MarkOffset2 := 1;
             TempString := Copy(Lines[BB.Line - 1], 1, BB.Char - 1) +
               Copy(Lines[BE.Line - 1], BE.Char, MaxInt);
               // Delete all lines in the selection range.
@@ -4049,7 +4052,7 @@ var
     end;
     // Update marks
     if UpdateMarks then
-      DoLinesDeleted(BB.Line, BE.Line - BB.Line + MarkOffset);
+      DoLinesDeleted(BB.Line + MarkOffset2, BE.Line - BB.Line + MarkOffset);
   end;
 
   procedure InsertText;
@@ -6857,7 +6860,7 @@ begin
             Helper := Helper + #13#10;
             fUndoList.AddChange(crSilentDeleteAfterCursor, BufferCoord(1, CaretY),
               BufferCoord(1, CaretY + 1), Helper, smNormal);
-            DoLinesDeleted(CaretY - 1, 1);
+            DoLinesDeleted(CaretY, 1);
           end;
           InternalCaretXY := BufferCoord(1, CaretY); // like seen in the Delphi editor
         end;
