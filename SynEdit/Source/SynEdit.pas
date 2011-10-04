@@ -28,7 +28,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEdit.pas,v 1.386.2.76 2009/09/28 17:54:20 maelh Exp $
+$Id: SynEdit.pas,v 1.26 2011/10/03 10:10:52 Egg Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -2125,7 +2125,7 @@ end;
 type
   TAccessWinControl = class(TWinControl);
 
-{$MESSAGE 'Check what must be adapted in DoKeyPressW and related methods'}
+{.$MESSAGE 'Check what must be adapted in DoKeyPressW and related methods'}
 procedure TCustomSynEdit.DoKeyPressW(var Message: TWMKey);
 var
   Form: TCustomForm;
@@ -4770,6 +4770,8 @@ begin
         ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
       end;
 
+      LockWindowUpdate(Handle);
+
       if (fScrollBars in [ssBoth, ssHorizontal]) and not WordWrap then
       begin
         if eoScrollPastEol in Options then
@@ -4807,7 +4809,7 @@ begin
             if (LeftChar <= 1) then
               EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_LEFT)
             else if iRightChar >= nMaxScroll then
-              EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_RIGHT);
+              EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_RIGHT)
           end;
         end
         else
@@ -4855,9 +4857,13 @@ begin
         end
         else
           EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
+
+        LockWindowUpdate(0);
+
       end
       else
         ShowScrollBar(Handle, SB_VERT, False);
+
     end {endif fScrollBars <> ssNone}
     else
       ShowScrollBar(Handle, SB_BOTH, False);
