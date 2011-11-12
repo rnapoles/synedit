@@ -62,9 +62,12 @@ var
   // Accumulate/hide whitespace at EOL (at end of wrapped rows, actually)
   OldWhitespaceBehaviour: Boolean = False;
 
+const
+  MaxIndex = MaxInt div 16;
+
 type
-  TLineIndex = 0..MaxListSize;
-  TRowIndex = 0..MaxListSize;
+  TLineIndex = 0..MaxIndex;
+  TRowIndex = 0..MaxIndex;
   TRowLength = word;
 
   TRowIndexArray = array [TLineIndex] of TRowIndex;
