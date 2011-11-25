@@ -4399,6 +4399,8 @@ begin
         ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
       end;
 
+      LockWindowUpdate(Handle);
+
       if (fScrollBars in [ssBoth, ssHorizontal]) and not WordWrap then
       begin
         if eoScrollPastEol in Options then
@@ -4436,7 +4438,7 @@ begin
             if (LeftChar <= 1) then
               EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_LEFT)
             else if iRightChar >= nMaxScroll then
-              EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_RIGHT);
+              EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_RIGHT)
           end;
         end
         else
@@ -4484,9 +4486,13 @@ begin
         end
         else
           EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
+
+        LockWindowUpdate(0);
+
       end
       else
         ShowScrollBar(Handle, SB_VERT, False);
+
     end {endif fScrollBars <> ssNone}
     else
       ShowScrollBar(Handle, SB_BOTH, False);
@@ -4817,14 +4823,14 @@ end;
 
 procedure TCustomSynEdit.WMSetText(var Msg: TWMSetText);
 begin
-  LongBool(Msg.Result) := True;
+  Msg.Result := 1;
   try
     if HandleAllocated and IsWindowUnicode(Handle) then
       Text := PWideChar(Msg.Text)
     else
       Text := UnicodeString(PAnsiChar(Msg.Text));
   except
-    LongBool(Msg.Result) := False;
+    Msg.Result := 0;
     raise
   end
 end;
@@ -9097,11 +9103,11 @@ begin
     if Result then
     begin
       if Action is TEditCut then
-        CutToClipboard
+        CommandProcessor(ecCut, ' ', nil)
       else if Action is TEditCopy then
         CopyToClipboard
-      else if Action is TEditPaste then
-        PasteFromClipboard
+      else if Action is TEditPaste then  
+        CommandProcessor(ecPaste, ' ', nil)
 {$IFDEF SYN_COMPILER_5_UP}
       else if Action is TEditDelete then
       begin
