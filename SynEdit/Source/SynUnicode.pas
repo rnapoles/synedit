@@ -1527,6 +1527,10 @@ begin
 end;
 
 function WStrCopy(Dest: PWideChar; const Source: PWideChar): PWideChar;
+{$IFDEF CPU64}
+begin
+  Result := SysUtils.StrCopy(Dest, Source)
+{$ELSE}
 asm
         PUSH    EDI
         PUSH    ESI
@@ -1547,9 +1551,14 @@ asm
         REP     MOVSW
         POP     ESI
         POP     EDI
+{$ENDIF}
 end;
 
 function WStrLCopy(Dest: PWideChar; const Source: PWideChar; MaxLen: Cardinal): PWideChar;
+{$IFDEF CPU64}
+begin
+  Result := SysUtils.StrLCopy(Dest, Source, MaxLen)
+{$ELSE}
 asm
         PUSH    EDI
         PUSH    ESI
@@ -1578,6 +1587,7 @@ asm
         POP     EBX
         POP     ESI
         POP     EDI
+{$ENDIF}
 end;
 
 function WStrCat(Dest: PWideChar; const Source: PWideChar): PWideChar;
@@ -2153,6 +2163,17 @@ end;
 // byte to go from LSB to MSB and vice versa.
 // EAX contains address of string
 procedure StrSwapByteOrder(Str: PWideChar);
+{$IFDEF CPU64}
+var
+  P: PWord;
+begin
+  P := PWord(Str);
+  while P^ <> 0 do 
+  begin
+    P^ := MakeWord(HiByte(P^), LoByte(P^));
+    Inc(P);
+  end;
+{$ELSE}
 asm
        PUSH    ESI
        PUSH    EDI
@@ -2171,6 +2192,7 @@ asm
 @@2:
        POP     EDI
        POP     ESI
+{$ENDIF}
 end;
 
 // works like QuotedStr from SysUtils.pas but can insert any quotation character
@@ -2401,7 +2423,7 @@ begin
     // value for GlyphBufferSize (see documentation of cGlyphs parameter of
     // ScriptStringAnalyse function)
     GlyphBufferSize := (3 * Count) div 2 + 16;
-    
+
     if Succeeded(ScriptStringAnalyse(DC, Str, Count, GlyphBufferSize, -1,
       SSAnalyseFlags, 0, nil, nil, nil, nil, nil, @saa)) then
     begin
@@ -2848,7 +2870,7 @@ var
 begin
   // if Stream is nil, let Delphi raise the exception, by accessing Stream,
   // to signal an invalid result
-  
+
   // start analysis at actual Stream.Position
   Size := Stream.Size - Stream.Position;
 
