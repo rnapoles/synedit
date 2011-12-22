@@ -4633,6 +4633,8 @@ begin
 {$ENDIF}
     else
       Invalidate;
+      
+    UpdateWindow(Handle);
     UpdateScrollBars;
     StatusChanged([scTopLine]);
   end;
@@ -4773,7 +4775,7 @@ begin
         ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
       end;
 
-      LockWindowUpdate(Handle);
+      SendMessage(Handle, WM_SETREDRAW, 0, 0);
 
       if (fScrollBars in [ssBoth, ssHorizontal]) and not WordWrap then
       begin
@@ -4861,7 +4863,8 @@ begin
         else
           EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
 
-        LockWindowUpdate(0);
+        SendMessage(Handle, WM_SETREDRAW, -1, 0); 
+        Invalidate;
 
       end
       else
