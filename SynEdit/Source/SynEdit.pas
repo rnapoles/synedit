@@ -1840,17 +1840,8 @@ begin
 end;
 
 function TCustomSynEdit.GetWordAtCursor: UnicodeString;
-var
-  bBegin: TBufferCoord;
-  bEnd: TBufferCoord;
 begin
-  bBegin := GetBlockBegin;
-  bEnd := GetBlockEnd;
-  SetBlockBegin(WordStart);
-  SetBlockEnd(WordEnd);
-  Result := SelText;
-  SetBlockBegin(bBegin);
-  SetBlockEnd(bEnd);
+   Result:=GetWordAtRowCol(CaretXY);
 end;
 
 procedure TCustomSynEdit.HideCaret;
@@ -4863,7 +4854,7 @@ begin
         else
           EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
 
-        SendMessage(Handle, WM_SETREDRAW, -1, 0); 
+        SendMessage(Handle, WM_SETREDRAW, -1, 0);
         Invalidate;
 
       end
