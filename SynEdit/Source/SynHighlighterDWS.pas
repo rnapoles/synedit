@@ -361,7 +361,7 @@ begin
   InitIdent;
   fRange := rsUnknown;
   fAsmStart := False;
-  fDefaultFilter := SYNS_FilterPascal;
+  fDefaultFilter := SYNS_FilterDWS;
 end;
 
 // Destroy
