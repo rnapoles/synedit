@@ -28,7 +28,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEdit.pas,v 1.26 2011/10/03 10:10:52 Egg Exp $
+$Id: SynEdit.pas,v 1.30 2011/12/26 14:01:52 Egg Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -10499,11 +10499,14 @@ function TCustomSynEdit.RowColToCharIndex(RowCol: TBufferCoord): Integer;
 { Row and Col are 1-based; Result is 0-based }
 var
   i: Integer;
+  synEditStringList : TSynEditStringList;
 begin
   Result := 0;
   RowCol.Line := Min(Lines.Count, RowCol.Line) - 1;
+  synEditStringList := (FLines as TSynEditStringList);
   for i := 0 to RowCol.Line - 1 do
-    Result := Result + Length(Lines[i]) + 2;
+    Result := Result + synEditStringList.LineCharLength(i) + 2;
+//    Result := Result + Length(Lines[i]) + 2;
   Result := Result + (RowCol.Char -1);
 end;
 

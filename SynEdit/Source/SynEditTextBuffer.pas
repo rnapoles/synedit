@@ -28,7 +28,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditTextBuffer.pas,v 1.63.2.15 2009/06/14 13:41:44 maelh Exp $
+$Id: SynEditTextBuffer.pas,v 1.13 2011/12/26 14:01:52 Egg Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -162,6 +162,8 @@ type
     procedure SetTextStr(const Value: UnicodeString); override;
     procedure LoadFromStream(Stream: TStream); override;
     procedure FontChanged;
+    function LineCharLength(Index : Integer) : Integer;
+
     property AppendNewLineAtEOF: Boolean read fAppendNewLineAtEOF write fAppendNewLineAtEOF;
 
     property FileFormat: TSynEditFileFormat read fFileFormat write SetFileFormat;
@@ -498,7 +500,7 @@ var
   Len: Integer;
 {$ENDIF OWN_UnicodeString_MEMMGR}
 begin
-  if (Index >= 0) and (Index < fCount) then
+  if Cardinal(Index)<Cardinal(fCount) then
     {$IFDEF OWN_UnicodeString_MEMMGR}
     with FList[Index] do
     begin
@@ -517,6 +519,13 @@ begin
     {$ENDIF OWN_UnicodeString_MEMMGR}
   else
     Result := '';
+end;
+
+function TSynEditStringList.LineCharLength(Index : Integer) : Integer;
+begin
+  if Cardinal(Index)<Cardinal(fCount) then
+    Result:=Length(fList^[Index].fString)
+  else Result:=0;
 end;
 
 function TSynEditStringList.GetCapacity: integer;
