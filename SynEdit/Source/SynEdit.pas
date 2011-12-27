@@ -360,6 +360,7 @@ type
     procedure WMCopy(var Message: TMessage); message WM_COPY;
     procedure WMCut(var Message: TMessage); message WM_CUT;
     procedure WMDropFiles(var Msg: TMessage); message WM_DROPFILES;
+    procedure WMDestroy(var Message: TWMDestroy); message WM_DESTROY;
     procedure WMEraseBkgnd(var Msg: TMessage); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Msg: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure WMGetText(var Msg: TWMGetText); message WM_GETTEXT;
@@ -5067,6 +5068,14 @@ begin
     Msg.Result := 0;
     DragFinish(THandle(Msg.wParam));
   end;
+end;
+
+procedure TCustomSynEdit.WMDestroy(var Message: TWMDestroy);
+begin
+  // assign WindowText here, otherwise the VCL will call GetText twice
+  if WindowText = nil then
+     WindowText := Lines.GetText;
+  inherited;
 end;
 
 procedure TCustomSynEdit.WMEraseBkgnd(var Msg: TMessage);
