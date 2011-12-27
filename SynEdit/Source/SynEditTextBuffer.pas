@@ -942,11 +942,10 @@ end;
 
 procedure TSynEditStringList.SetTextStr(const Value: UnicodeString);
 var
-  Size: Integer;
   S: UnicodeString;
-  P, Start: PWideChar;
+  Size: Integer;
+  P, Start, Pmax: PWideChar;
   fCR, fLF, fLINESEPARATOR: Boolean;
-  iPos: Integer;
 begin
   fLINESEPARATOR := False;
   fCR := False;
@@ -954,46 +953,47 @@ begin
   BeginUpdate;
   try
     Clear;
-    Size := Length(Value);
     P := Pointer(Value);
     if P <> nil then
     begin
-      iPos := 0;
-      while (iPos < Size) do
+      Size := Length(Value);
+      Pmax := @Value[Size];
+      while (P <= Pmax) do
       begin
         Start := P;
-        while not CharInSet(P^, [#10, #13]) and (P^ <> WideLineSeparator) and (iPos < Size) do
+        while (P^ <> WideCR) and (P^ <> WideLF) and (P^ <> WideLineSeparator) and (P <= Pmax) do
         begin
           Inc(P);
-          Inc(iPos);
         end;
-        SetString(S, Start, P - Start);
-        Add(S);
+        if P<>Start then
+        begin
+          SetString(S, Start, P - Start);
+          InsertItem(fCount, S);
+        end else InsertItem(fCount, '');
         if P^ = WideLineSeparator then
         begin
           fLINESEPARATOR := True;
           Inc(P);
-          Inc(iPos);
         end;
         if P^ = WideCR then
         begin
           fCR := True;
           Inc(P);
-          Inc(iPos);
         end;
         if P^ = WideLF then
         begin
           fLF := True;
           Inc(P);
-          Inc(iPos);
         end;
       end;
       // keep the old format of the file
       if not AppendNewLineAtEOF and
         (CharInSet(Value[Size], [#10, #13]) or (Value[Size] = WideLineSeparator))
       then
-        Add('');
+        InsertItem(fCount, '');
     end;
+    if Assigned(OnInserted) then
+      OnInserted(Self, 0, fCount);
   finally
     EndUpdate;
   end;
