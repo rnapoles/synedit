@@ -78,6 +78,7 @@ type
     fObject: TObject;
     fRange: TSynEditRange;
     fExpandedLength: Integer;
+    fCharIndex : Integer;
     fFlags: TSynEditStringFlags;
   end;
 
@@ -109,6 +110,7 @@ type
     fIndexOfLongestLine: integer;
     fTabWidth: integer;
     FExpandAtWideGlyphsFunc: TExpandAtWideGlyphsFunc;
+    FCharIndexesAreValid : Boolean;
     fOnChange: TNotifyEvent;
     fOnChanging: TNotifyEvent;
     fOnCleared: TNotifyEvent;
@@ -141,6 +143,7 @@ type
       {$IFDEF SYN_COMPILER_3_UP} override; {$ENDIF}
     procedure SetTabWidth(Value: integer);
     procedure SetUpdateState(Updating: Boolean); override;
+    procedure UpdateCharIndexes;
   public
     constructor Create(AExpandAtWideGlyphsFunc: TExpandAtWideGlyphsFunc);
     destructor Destroy; override;
@@ -163,6 +166,7 @@ type
     procedure LoadFromStream(Stream: TStream); override;
     procedure FontChanged;
     function LineCharLength(Index : Integer) : Integer;
+    function LineCharIndex(Index : Integer) : Integer;
 
     property AppendNewLineAtEOF: Boolean read fAppendNewLineAtEOF write fAppendNewLineAtEOF;
 
@@ -521,11 +525,36 @@ begin
     Result := '';
 end;
 
+procedure TSynEditStringList.UpdateCharIndexes;
+var
+  i, n : Integer;
+  p : PSynEditStringRec;
+begin
+  FCharIndexesAreValid:=True;
+  if fCount=0 then Exit;
+  p:=@fList^[0];
+  n:=0;
+  for i:=1 to fCount do begin
+    p.fCharIndex:=n;
+    Inc(n, Length(p.FString));
+    Inc(p);
+  end;
+end;
+
 function TSynEditStringList.LineCharLength(Index : Integer) : Integer;
 begin
   if Cardinal(Index)<Cardinal(fCount) then
     Result:=Length(fList^[Index].fString)
   else Result:=0;
+end;
+
+function TSynEditStringList.LineCharIndex(Index : Integer) : Integer;
+begin
+  if Cardinal(Index)<Cardinal(fCount) then begin
+    if not FCharIndexesAreValid then
+      UpdateCharIndexes;
+    Result:=fList^[Index].fCharIndex;
+  end else Result:=0;
 end;
 
 function TSynEditStringList.GetCapacity: integer;
@@ -797,7 +826,7 @@ begin
   if (Index = 0) and (fCount = 0) or (fCount = Index) then
     Add(S)
   else begin
-    if (Index < 0) or (Index >= fCount) then
+    if Cardinal(Index)>=Cardinal(fCount) then
       ListIndexOutOfBounds(Index);
     BeginUpdate;
     fIndexOfLongestLine := -1;
@@ -819,7 +848,7 @@ end;
 
 procedure TSynEditStringList.PutObject(Index: integer; AObject: TObject);
 begin
-  if (Index < 0) or (Index >= fCount) then
+  if Cardinal(Index)>=Cardinal(fCount) then
     ListIndexOutOfBounds(Index);
   BeginUpdate;
   fList^[Index].fObject := AObject;
@@ -828,7 +857,7 @@ end;
 
 procedure TSynEditStringList.PutRange(Index: integer; ARange: TSynEditRange);
 begin
-  if (Index < 0) or (Index >= fCount) then
+  if Cardinal(Index)>=Cardinal(fCount) then
     ListIndexOutOfBounds(Index);
   BeginUpdate;
   fList^[Index].fRange := ARange;
@@ -981,6 +1010,7 @@ end;
 
 procedure TSynEditStringList.SetUpdateState(Updating: Boolean);
 begin
+  FCharIndexesAreValid:=False;
   if Updating then begin
     if Assigned(fOnChanging) then
       fOnChanging(Self);

@@ -10498,16 +10498,12 @@ end;
 function TCustomSynEdit.RowColToCharIndex(RowCol: TBufferCoord): Integer;
 { Row and Col are 1-based; Result is 0-based }
 var
-  i: Integer;
   synEditStringList : TSynEditStringList;
 begin
-  Result := 0;
   RowCol.Line := Min(Lines.Count, RowCol.Line) - 1;
   synEditStringList := (FLines as TSynEditStringList);
-  for i := 0 to RowCol.Line - 1 do
-    Result := Result + synEditStringList.LineCharLength(i) + 2;
-//    Result := Result + Length(Lines[i]) + 2;
-  Result := Result + (RowCol.Char -1);
+  Result :=  synEditStringList.LineCharIndex(RowCol.Line)
+           + (RowCol.Char -1);
 end;
 
 procedure TCustomSynEdit.Clear;
