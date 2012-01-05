@@ -28,7 +28,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditTextBuffer.pas,v 1.13 2011/12/26 14:01:52 Egg Exp $
+$Id: SynEditTextBuffer.pas,v 1.14 2011/12/28 09:24:20 Egg Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -81,6 +81,11 @@ type
     fCharIndex : Integer;
     fFlags: TSynEditStringFlags;
   end;
+
+  TSynEditTwoWideChars = record
+    One, Two : WideChar;
+  end;
+  PSynEditTwoWideChars = ^TSynEditTwoWideChars;
 
 const
   SynEditStringRecSize = SizeOf(TSynEditStringRec);
@@ -640,6 +645,63 @@ end;
 
 function TSynEditStringList.GetTextStr: UnicodeString;
 
+  function FastGetTextStr : String;
+  var
+    I, L, Size, LineBreakSize: Integer;
+    P, PLineBreak: PChar;
+    PRec: PSynEditStringRec;
+  begin
+    if fCount = 0 then begin
+       Result := '';
+       exit;
+    end;
+    LineBreakSize := Length(LineBreak);
+    PLineBreak := Pointer(LineBreak);
+
+    // compute buffer size
+    Size :=   (fCount-1) * LineBreakSize
+            + LineCharIndex( fCount-1 )
+            + Length( fList^[fCount-1].FString );
+    SetLength(Result, Size);
+
+    P := Pointer(Result);
+    PRec := @fList^[0];
+
+    // handle 1st line separately (to avoid trailing line break)
+    L := Length(PRec.FString);
+    if L <> 0 then
+    begin
+      System.Move(Pointer(PRec.FString)^, P^, L * SizeOf(Char));
+      Inc(P, L);
+    end;
+    Inc(PRec);
+
+    for I := 1 to fCount-1 do
+    begin
+      case LineBreakSize of
+        0 : ;
+        1 : begin
+          P^ := PLineBreak^;
+          Inc(P);
+        end;
+        2 : begin
+          PSynEditTwoWideChars(P)^ := PSynEditTwoWideChars(PLineBreak)^;
+          Inc(P, 2);
+        end;
+      else
+        System.Move(PLineBreak^, P^, LineBreakSize * SizeOf(Char));
+        Inc(P, LineBreakSize);
+      end;
+      if Pointer( PRec.FString ) <> nil then
+      begin
+        L := Length(PRec.FString);
+        System.Move(Pointer(PRec.FString)^, P^, L * SizeOf(Char));
+        Inc(P, L);
+      end;
+      Inc(PRec);
+    end;
+  end;
+
   procedure RemoveTrailingUnicodeLineBreak;
   begin // The Delphi 2009+ RTL forces a trailing line break when getting the text, so we remove it
   {$IFDEF UNICODE}
@@ -653,15 +715,16 @@ var
 begin
   if not FStreaming then
   begin
-    Result := inherited GetTextStr;
-    RemoveTrailingUnicodeLineBreak;
+    Result := FastGetTextStr;
+//    Result := inherited GetTextStr;
+//    RemoveTrailingUnicodeLineBreak;
   end
   else
   begin
 {$IFDEF UNICODE}
     SLineBreak := LineBreak;
-    Result := inherited GetTextStr;
-    RemoveTrailingUnicodeLineBreak;
+    Result := FastGetTextStr;
+    //RemoveTrailingUnicodeLineBreak;
 {$ELSE}
     case FileFormat of
       sffDos:
