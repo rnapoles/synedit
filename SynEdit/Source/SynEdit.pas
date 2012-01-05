@@ -28,7 +28,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEdit.pas,v 1.30 2011/12/26 14:01:52 Egg Exp $
+$Id: SynEdit.pas,v 1.32 2012/01/05 15:30:39 Egg Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -335,9 +335,10 @@ type
     fOwner: TCustomSynEdit;
   protected
     procedure AfterPaint(ACanvas: TCanvas; const AClip: TRect;
-      FirstLine, LastLine: Integer); virtual; abstract;
-    procedure LinesInserted(FirstLine, Count: Integer); virtual; abstract;
-    procedure LinesDeleted(FirstLine, Count: Integer); virtual; abstract;
+      FirstLine, LastLine: Integer); virtual;
+    procedure PaintTransient(ACanvas: TCanvas; ATransientType: TTransientType); virtual;
+    procedure LinesInserted(FirstLine, Count: Integer); virtual;
+    procedure LinesDeleted(FirstLine, Count: Integer); virtual;
   protected
     property Editor: TCustomSynEdit read fOwner;
   public
@@ -10100,28 +10101,38 @@ begin
 end;
 
 procedure TCustomSynEdit.DoOnPaintTransientEx(TransientType: TTransientType; Lock: Boolean);
-var DoTransient: Boolean;
+var
+  DoTransient: Boolean;
+  i: Integer;
 begin
   DoTransient:=(FPaintTransientLock=0);
   if Lock then
-    begin
+  begin
     if (TransientType=ttBefore) then inc(FPaintTransientLock)
     else
-      begin
+    begin
       dec(FPaintTransientLock);
       DoTransient:=(FPaintTransientLock=0);
-      end;
     end;
+  end;
 
-  if DoTransient and Assigned(fOnPaintTransient) then
+  if DoTransient then
   begin
-    Canvas.Font.Assign(Font);
-    Canvas.Brush.Color := Color;
-    HideCaret;
-    try
-      fOnPaintTransient(Self, Canvas, TransientType);
-    finally
-      ShowCaret;
+    // plugins
+    if fPlugins <> nil then
+      for i := 0 to fPlugins.Count - 1 do
+        TSynEditPlugin(fPlugins[i]).PaintTransient(Canvas, TransientType);
+    // event
+    if Assigned(fOnPaintTransient) then
+    begin
+      Canvas.Font.Assign(Font);
+      Canvas.Brush.Color := Color;
+      HideCaret;
+      try
+        fOnPaintTransient(Self, Canvas, TransientType);
+      finally
+        ShowCaret;
+      end;
     end;
   end;
 end;
@@ -11139,6 +11150,27 @@ begin
   if fOwner <> nil then
     fOwner.fPlugins.Extract(Self); // we are being destroyed, fOwner should not free us
   inherited Destroy;
+end;
+
+procedure TSynEditPlugin.AfterPaint(ACanvas: TCanvas; const AClip: TRect;
+      FirstLine, LastLine: Integer);
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.PaintTransient(ACanvas: TCanvas; ATransientType: TTransientType);
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.LinesInserted(FirstLine, Count: Integer);
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.LinesDeleted(FirstLine, Count: Integer);
+begin
+  // nothing
 end;
 
 {$IFNDEF UNICODE}
