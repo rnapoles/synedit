@@ -9435,6 +9435,9 @@ begin
   end;
 {$ENDIF}
 
+  // assign WindowText here, otherwise the VCL will call GetText twice
+  if WindowText = nil then
+     WindowText := Lines.GetText;
   inherited;
 end;
 
