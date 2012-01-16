@@ -645,6 +645,7 @@ end;
 
 function TSynEditStringList.GetTextStr: UnicodeString;
 
+  {$IFDEF UNICODE}
   function FastGetTextStr : String;
   var
     I, L, Size, LineBreakSize: Integer;
@@ -701,6 +702,7 @@ function TSynEditStringList.GetTextStr: UnicodeString;
       Inc(PRec);
     end;
   end;
+  {$ENDIF}
 
   procedure RemoveTrailingUnicodeLineBreak;
   begin // The Delphi 2009+ RTL forces a trailing line break when getting the text, so we remove it
@@ -715,9 +717,12 @@ var
 begin
   if not FStreaming then
   begin
+{$IFDEF UNICODE}
     Result := FastGetTextStr;
-//    Result := inherited GetTextStr;
-//    RemoveTrailingUnicodeLineBreak;
+{$ELSE}
+    Result := inherited GetTextStr;
+    RemoveTrailingUnicodeLineBreak;
+{$ENDIF}
   end
   else
   begin

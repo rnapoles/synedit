@@ -5073,9 +5073,11 @@ end;
 
 procedure TCustomSynEdit.WMDestroy(var Message: TWMDestroy);
 begin
+  {$IFDEF UNICODE}
   // assign WindowText here, otherwise the VCL will call GetText twice
   if WindowText = nil then
      WindowText := Lines.GetText;
+  {$ENDIF}
   inherited;
 end;
 
@@ -9435,10 +9437,12 @@ begin
   end;
 {$ENDIF}
 
+{$IFDEF UNICODE}
   // assign WindowText here, otherwise the VCL will call GetText twice
   if WindowText = nil then
      WindowText := Lines.GetText;
   inherited;
+{$ENDIF}
 end;
 
 procedure TCustomSynEdit.InvalidateRect(const aRect: TRect; aErase: Boolean);
