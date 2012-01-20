@@ -167,7 +167,7 @@ type
       write SetDetectPreprocessor;
     property IdentifierAttri: TSynHighlighterAttributes read fIdentifierAttri
       write fIdentifierAttri;
-    property IdentifierChars: String read GetIdentifierChars
+    property IdentifierChars: UnicodeString read GetIdentifierChars
       write SetIdentifierChars stored StoreIdentChars;
     property KeyAttri: TSynHighlighterAttributes read fKeyAttri write fKeyAttri;
     property KeyWords: TUnicodeStrings read fKeyWords write SetKeyWords;
