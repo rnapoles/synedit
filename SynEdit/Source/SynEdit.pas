@@ -4857,7 +4857,8 @@ begin
           EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
 
         SendMessage(Handle, WM_SETREDRAW, -1, 0);
-        Invalidate;
+        if fPaintLock=0 then
+           Invalidate;
 
       end
       else
