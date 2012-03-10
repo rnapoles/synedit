@@ -1527,7 +1527,7 @@ begin
 end;
 
 function WStrCopy(Dest: PWideChar; const Source: PWideChar): PWideChar;
-{$IFDEF CPU64}
+{$IFDEF CPUX64}
 begin
   Result := SysUtils.StrCopy(Dest, Source)
 {$ELSE}
@@ -1555,7 +1555,7 @@ asm
 end;
 
 function WStrLCopy(Dest: PWideChar; const Source: PWideChar; MaxLen: Cardinal): PWideChar;
-{$IFDEF CPU64}
+{$IFDEF CPUX64}
 begin
   Result := SysUtils.StrLCopy(Dest, Source, MaxLen)
 {$ELSE}
@@ -2163,12 +2163,12 @@ end;
 // byte to go from LSB to MSB and vice versa.
 // EAX contains address of string
 procedure StrSwapByteOrder(Str: PWideChar);
-{$IFDEF CPU64}
+{$IFDEF CPUX64}
 var
   P: PWord;
 begin
   P := PWord(Str);
-  while P^ <> 0 do 
+  while P^ <> 0 do
   begin
     P^ := MakeWord(HiByte(P^), LoByte(P^));
     Inc(P);
