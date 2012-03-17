@@ -9690,7 +9690,7 @@ begin
       if Action is TEditCut then
         CommandProcessor(ecCut, ' ', nil)
       else if Action is TEditCopy then
-        CopyToClipboard
+        CommandProcessor(ecCopy, ' ', nil)
       else if Action is TEditPaste then  
         CommandProcessor(ecPaste, ' ', nil)
 {$IFDEF SYN_COMPILER_5_UP}
@@ -9704,10 +9704,10 @@ begin
 {$IFDEF SYN_CLX}
 {$ELSE}
       else if Action is TEditUndo then
-        Undo
+        CommandProcessor(ecUndo, ' ', nil)
 {$ENDIF}
       else if Action is TEditSelectAll then
-        SelectAll;
+        CommandProcessor(ecSelectAll, ' ', nil);
 {$ENDIF}
     end
   end
