@@ -301,9 +301,10 @@ type
     fOwner: TCustomSynEdit;
   protected
     procedure AfterPaint(ACanvas: TCanvas; const AClip: TRect;
-      FirstLine, LastLine: Integer); virtual; abstract;
-    procedure LinesInserted(FirstLine, Count: Integer); virtual; abstract;
-    procedure LinesDeleted(FirstLine, Count: Integer); virtual; abstract;
+      FirstLine, LastLine: Integer); virtual;
+    procedure PaintTransient(ACanvas: TCanvas; ATransientType: TTransientType); virtual;
+    procedure LinesInserted(FirstLine, Count: Integer); virtual;
+    procedure LinesDeleted(FirstLine, Count: Integer); virtual;
   protected
     property Editor: TCustomSynEdit read fOwner;
   public
@@ -325,6 +326,7 @@ type
     procedure WMCopy(var Message: TMessage); message WM_COPY;
     procedure WMCut(var Message: TMessage); message WM_CUT;
     procedure WMDropFiles(var Msg: TMessage); message WM_DROPFILES;
+    procedure WMDestroy(var Message: TWMDestroy); message WM_DESTROY;
     procedure WMEraseBkgnd(var Msg: TMessage); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Msg: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure WMGetText(var Msg: TWMGetText); message WM_GETTEXT;
@@ -1706,17 +1708,8 @@ begin
 end;
 
 function TCustomSynEdit.GetWordAtCursor: UnicodeString;
-var
-  bBegin: TBufferCoord;
-  bEnd: TBufferCoord;
 begin
-  bBegin := GetBlockBegin;
-  bEnd := GetBlockEnd;
-  SetBlockBegin(WordStart);
-  SetBlockEnd(WordEnd);
-  Result := SelText;
-  SetBlockBegin(bBegin);
-  SetBlockEnd(bEnd);
+   Result:=GetWordAtRowCol(CaretXY);
 end;
 
 procedure TCustomSynEdit.HideCaret;
@@ -1946,7 +1939,7 @@ end;
 type
   TAccessWinControl = class(TWinControl);
 
-{$MESSAGE 'Check what must be adapted in DoKeyPressW and related methods'}
+{.$MESSAGE 'Check what must be adapted in DoKeyPressW and related methods'}
 procedure TCustomSynEdit.DoKeyPressW(var Message: TWMKey);
 var
   Form: TCustomForm;
@@ -4328,6 +4321,8 @@ begin
       ScrollWindow(Handle, 0, fTextHeight * Delta, nil, nil)
     else
       Invalidate;
+      
+    UpdateWindow(Handle);
     UpdateScrollBars;
     StatusChanged([scTopLine]);
   end;
@@ -4399,7 +4394,7 @@ begin
         ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
       end;
 
-      LockWindowUpdate(Handle);
+      SendMessage(Handle, WM_SETREDRAW, 0, 0);
 
       if (fScrollBars in [ssBoth, ssHorizontal]) and not WordWrap then
       begin
@@ -4487,7 +4482,9 @@ begin
         else
           EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
 
-        LockWindowUpdate(0);
+        SendMessage(Handle, WM_SETREDRAW, -1, 0);
+        if fPaintLock=0 then
+           Invalidate;
 
       end
       else
@@ -4601,6 +4598,16 @@ begin
     Msg.Result := 0;
     DragFinish(THandle(Msg.wParam));
   end;
+end;
+
+procedure TCustomSynEdit.WMDestroy(var Message: TWMDestroy);
+begin
+  {$IFDEF UNICODE}
+  // assign WindowText here, otherwise the VCL will call GetText twice
+  if WindowText = nil then
+     WindowText := Lines.GetText;
+  {$ENDIF}
+  inherited;
 end;
 
 procedure TCustomSynEdit.WMEraseBkgnd(var Msg: TMessage);
@@ -8859,6 +8866,11 @@ begin
   end;
 {$ENDIF}
 
+{$IFDEF UNICODE}
+  // assign WindowText here, otherwise the VCL will call GetText twice
+  if WindowText = nil then
+     WindowText := Lines.GetText;
+{$ENDIF}
   inherited;
 end;
 
@@ -9119,7 +9131,7 @@ begin
       else if Action is TEditUndo then
         CommandProcessor(ecUndo, ' ', nil)
       else if Action is TEditSelectAll then
-        SelectAll;
+        CommandProcessor(ecSelectAll, ' ', nil);
 {$ENDIF}
     end
   end
@@ -9514,7 +9526,9 @@ begin
 end;
 
 procedure TCustomSynEdit.DoOnPaintTransientEx(TransientType: TTransientType; Lock: Boolean);
-var DoTransient: Boolean;
+var
+  DoTransient: Boolean;
+  i: Integer;
 begin
   DoTransient:=(FPaintTransientLock=0);
   if Lock then
@@ -9527,7 +9541,14 @@ begin
       end;
     end;
 
-  if DoTransient and Assigned(fOnPaintTransient) then
+  if DoTransient then
+  begin
+    // plugins
+    if fPlugins <> nil then
+      for i := 0 to fPlugins.Count - 1 do
+        TSynEditPlugin(fPlugins[i]).PaintTransient(Canvas, TransientType);
+    // event
+    if Assigned(fOnPaintTransient) then
   begin
     Canvas.Font.Assign(Font);
     Canvas.Brush.Color := Color;
@@ -9538,6 +9559,7 @@ begin
       ShowCaret;
     end;
   end;
+end;
 end;
 
 procedure TCustomSynEdit.DoOnPaintTransient(TransientType: TTransientType);
@@ -9921,13 +9943,12 @@ end;
 function TCustomSynEdit.RowColToCharIndex(RowCol: TBufferCoord): Integer;
 { Row and Col are 1-based; Result is 0-based }
 var
-  i: Integer;
+  synEditStringList : TSynEditStringList;
 begin
-  Result := 0;
   RowCol.Line := Min(Lines.Count, RowCol.Line) - 1;
-  for i := 0 to RowCol.Line - 1 do
-    Result := Result + Length(Lines[i]) + 2;
-  Result := Result + (RowCol.Char -1);
+  synEditStringList := (FLines as TSynEditStringList);
+  Result :=  synEditStringList.LineCharIndex(RowCol.Line)
+           + (RowCol.Char -1);
 end;
 
 procedure TCustomSynEdit.Clear;
@@ -10542,6 +10563,27 @@ begin
   if fOwner <> nil then
     fOwner.fPlugins.Extract(Self); // we are being destroyed, fOwner should not free us
   inherited Destroy;
+end;
+
+procedure TSynEditPlugin.AfterPaint(ACanvas: TCanvas; const AClip: TRect;
+      FirstLine, LastLine: Integer);
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.PaintTransient(ACanvas: TCanvas; ATransientType: TTransientType);
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.LinesInserted(FirstLine, Count: Integer);
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.LinesDeleted(FirstLine, Count: Integer);
+begin
+  // nothing
 end;
 
 {$IFNDEF UNICODE}
