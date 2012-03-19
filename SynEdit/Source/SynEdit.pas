@@ -4394,7 +4394,7 @@ begin
         ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
       end;
 
-      SendMessage(Handle, WM_SETREDRAW, 0, 0);
+      if Visible then SendMessage(Handle, WM_SETREDRAW, 0, 0);
 
       if (fScrollBars in [ssBoth, ssHorizontal]) and not WordWrap then
       begin
@@ -4482,7 +4482,7 @@ begin
         else
           EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
 
-        SendMessage(Handle, WM_SETREDRAW, -1, 0);
+        if Visible then SendMessage(Handle, WM_SETREDRAW, -1, 0);
         if fPaintLock=0 then
            Invalidate;
 
