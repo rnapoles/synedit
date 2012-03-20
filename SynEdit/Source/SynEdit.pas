@@ -9947,8 +9947,9 @@ var
 begin
   RowCol.Line := Min(Lines.Count, RowCol.Line) - 1;
   synEditStringList := (FLines as TSynEditStringList);
+  // CharIndexToRowCol assumes a line break size of two
   Result :=  synEditStringList.LineCharIndex(RowCol.Line)
-           + (RowCol.Char -1);
+           + RowCol.Line * 2 + (RowCol.Char -1);
 end;
 
 procedure TCustomSynEdit.Clear;
