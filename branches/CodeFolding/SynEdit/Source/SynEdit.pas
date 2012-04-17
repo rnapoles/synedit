@@ -9621,24 +9621,15 @@ end;
 function TCustomSynEdit.GetWordAtRowCol(XY: TBufferCoord): UnicodeString;
 var
   Line: UnicodeString;
-  Len, Stop: Integer;
+  Start, Stop: Integer;
 begin
   Result := '';
   if (XY.Line >= 1) and (XY.Line <= Lines.Count) then
   begin
     Line := Lines[XY.Line - 1];
-    Len := Length(Line);
-    if Len = 0 then Exit;
-    if (XY.Char >= 1) and (XY.Char <= Len + 1) and IsIdentChar(Line[XY.Char]) then
-    begin
-      Stop := XY.Char;
-      while (Stop <= Len) and IsIdentChar(Line[Stop]) do
-        Inc(Stop);
-      while (XY.Char > 1) and IsIdentChar(Line[XY.Char - 1]) do
-        Dec(XY.Char);
-      if Stop > XY.Char then
-        Result := Copy(Line, XY.Char, Stop - XY.Char);
-    end;
+    Start := WordStartEx(XY).Char;
+    Stop := WordEndEx(XY).Char;
+    Result := Copy(Line, Start, Stop - Start);
   end;
 end;
 
