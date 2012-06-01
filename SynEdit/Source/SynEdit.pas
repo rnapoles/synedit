@@ -8448,8 +8448,9 @@ begin
         end
         else
           nAction := raReplace;
-        if nAction <> raSkip then
-        begin
+        if nAction = raSkip then
+          Dec(Result)
+        else begin
           // user has been prompted and has requested to silently replace all
           // so turn off prompting
           if nAction = raReplaceAll then begin
