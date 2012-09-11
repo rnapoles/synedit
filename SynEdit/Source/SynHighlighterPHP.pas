@@ -278,10 +278,11 @@ end;
 
 function TSynPHPSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
 begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier
+  if IsCurrentToken(KeyWords[Index]) then begin
+    Result := tkKey;
+  end else begin
+    Result := tkIdentifier;
+  end;
 end;
 
 constructor TSynPHPSyn.Create(AOwner: TComponent);
