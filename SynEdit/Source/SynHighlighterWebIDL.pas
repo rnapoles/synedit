@@ -76,7 +76,11 @@ type
     stkBraceOpen,
     stkBraceClose,
     stkSquareOpen,
-    stkSquareClose
+    stkSquareClose,
+    stkQuestionMark,
+    stkColon,
+    stkGreater,
+    stkLess
   );
 
   TRangeState = (rsUnknown, rsSingleComment, rsCStyleComment, rsString,
@@ -148,17 +152,21 @@ type
     function AltFunc(Index: Integer): TtkTokenKind;
     procedure InitIdent;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
-    procedure NullProc;
-    procedure NumberProc;
-    procedure SpaceProc;
-    procedure CRProc;
-    procedure LFProc;
     procedure BraceCloseProc;
     procedure BraceOpenProc;
+    procedure ColonProc;
+    procedure CRProc;
+    procedure CStyleCommentProc;
+    procedure GreaterProc;
+    procedure LessProc;
+    procedure LFProc;
+    procedure NullProc;
+    procedure NumberProc;
+    procedure QuestionMarkProc;
+    procedure SlashProc;
+    procedure SpaceProc;
     procedure SquareCloseProc;
     procedure SquareOpenProc;
-    procedure SlashProc;
-    procedure CStyleCommentProc;
     procedure StringOpenProc;
     procedure StringProc;
   protected
@@ -332,6 +340,13 @@ begin
   fIdentFuncTable[58] := FuncUnrestricted;
   fIdentFuncTable[40] := FuncUnsigned;
   fIdentFuncTable[3] := FuncVoid;
+end;
+
+procedure TSynWebIDLSyn.ColonProc;
+begin
+  Inc(Run);
+  fTokenId := tkSymbol;
+  fSymbolTokenID := stkColon;
 end;
 
 {$Q-}
@@ -734,12 +749,33 @@ begin
   end;
 end;
 
+procedure TSynWebIDLSyn.QuestionMarkProc;
+begin
+  Inc(Run);
+  fTokenID := tkSymbol;
+  fSymbolTokenID := stkQuestionMark;
+end;
+
 procedure TSynWebIDLSyn.CRProc;
 begin
   fTokenID := tkSpace;
   inc(Run);
   if fLine[Run] = #10 then
     inc(Run);
+end;
+
+procedure TSynWebIDLSyn.GreaterProc;
+begin
+  Inc(Run);
+  fTokenId := tkSymbol;
+  fSymbolTokenID := stkGreater;
+end;
+
+procedure TSynWebIDLSyn.LessProc;
+begin
+  Inc(Run);
+  fTokenId := tkSymbol;
+  fSymbolTokenID := stkLess;
 end;
 
 procedure TSynWebIDLSyn.LFProc;
@@ -889,6 +925,10 @@ begin
       '}': BraceCloseProc;
       ']': SquareCloseProc;
       '[': SquareOpenProc;
+      '?': QuestionMarkProc;
+      ':': ColonProc;
+      '>': GreaterProc;
+      '<': LessProc;
     else
       UnknownProc;
     end;
